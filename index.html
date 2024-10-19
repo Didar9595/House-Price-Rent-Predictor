@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+  <title>ML Mini Project</title>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg w-[fit-content]">
+    <h1 class="text-2xl font-semibold text-gray-800 mb-6 text-center">Rent Prediction Form</h1>
+    <form id="form" class="space-y-4">
+      <input type="number" name="bhk" id="bhk" placeholder="Enter BHK"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <input type="number" name="size" id="size" placeholder="Enter Size (sqft)"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+      <div class="text-md text-red-600 font-bold italic">Note: (Super Area = 1, Carpet Area = 2, Built Area = 3)</div>
+      <input type="number" name="area_type" id="area_type" placeholder="Enter Area Type"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+      <div class="text-md text-red-600 font-bold italic">Note:"Mumbai": 4000, "Chennai": 6000,
+        "Bangalore": 5600, "Hyderabad": 5000,
+        "Delhi": 1100, "Kolkata": 7000</div>
+      <input type="number" name="pincode" id="pincode" placeholder="Enter Pincode"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+      <div class="text-md text-red-600 font-bold italic">Note: (Unfurnished = 0,Semi-Furnished = 1,Furnished = 2)</div>
+      <input type="number" name="furnishing" id="furnishing" placeholder="Enter Furnishing Status"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+
+      <div class="text-md text-red-600 font-bold italic">Note: (Bachelors = 1,Bachelors/Family = 2,Only Family = 3)</div>
+      <input type="number" name="tenant_type" id="tenant_type" placeholder="Enter Tenant Type"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      
+      <input type="number" name="bathrooms" id="bathrooms" placeholder="Enter Number of Bathrooms"
+        class="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      <button type="submit" id="submit"
+        class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+        Submit
+      </button>
+    </form>
+    <div id="prediction" class="mt-6 text-center text-lg font-medium text-gray-700 font-bold"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const resultDiv = document.getElementById('prediction');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+
+      const data = {
+        bhk: parseInt(document.getElementById('bhk').value),
+        size: parseInt(document.getElementById('size').value),
+        area_type: parseInt(document.getElementById('area_type').value),
+        pincode: parseInt(document.getElementById('pincode').value),
+        furnishing: parseInt(document.getElementById('furnishing').value),
+        tenant_type: parseInt(document.getElementById('tenant_type').value),
+        bathrooms: parseInt(document.getElementById('bathrooms').value),
+      };
+
+      try {
+        const response = await fetch('http://localhost:5000/predict', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const predictionData = await response.json();
+        console.log(predictionData);
+        resultDiv.innerHTML = `Predicted Rent : ₹ ${predictionData.prediction}`;
+      } catch (error) {
+        console.error('Error:', error);
+        resultDiv.innerHTML = `Error: ${error.message}`;
+      }
+    });
+  </script>
+</body>
+
+</html>
