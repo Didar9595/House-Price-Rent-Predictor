@@ -5,7 +5,7 @@ from flask_cors import CORS
 import os
 
 # Load the pre-trained model
-model = joblib.load('Prediction_model.joblib')
+model = joblib.load('Prediction_Model.joblib')
 
 # Initialize Flask app
 app = Flask(__name__)
