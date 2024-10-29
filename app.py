@@ -1,48 +1,53 @@
 from flask import Flask, request, jsonify
-import joblib  # For loading the model
+import joblib
 import numpy as np
-from flask_cors import CORS
 import os
+from flask_cors import CORS
 
-# Load the pre-trained model
-model = joblib.load('Prediction_Model.joblib')
+# Set environment variables to suppress TensorFlow info logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+# Load the pre-trained model (ensure the file path is correct)
+try:
+    model = joblib.load('Prediction_Model.joblib')
+    print("Model loaded successfully")
+except Exception as e:
+    print(f"Error loading model: {e}")
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app) 
+CORS(app)  # Enable CORS for cross-origin requests
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # Get JSON data from the frontend
         data = request.json
-        print("Hii")
-        # Extract the input values from the request
-        input_features = [
-            data['bhk'], 
-            data['size'], 
-            data['area_type'], 
-            data['pincode'], 
-            data['furnishing'], 
-            data['tenant_type'], 
-            data['bathrooms']
-        ]
+        print("Received data:", data)
 
-        # Convert to numpy array and reshape for the model
-        input_array = np.array(input_features).reshape(1, -1)
+        # Validate the input
+        if not all(value is not None for value in data.values()):
+            return jsonify({'error': 'Missing input values'}), 400
 
-        # Perform the prediction
-        prediction = model.predict(input_array)[0]
-        # Ensure the prediction is a float value, not a numpy type
-        prediction = float(prediction)
-        
-        # Return the prediction result as JSON
-        return jsonify({'prediction': round(prediction, 2)})
+        # Prepare input features for prediction
+        input_features = np.array([
+            float(data['bhk']),
+            float(data['size']),
+            float(data['area_type']),
+            float(data['pincode']),
+            float(data['furnishing']),
+            float(data['tenant_type']),
+            float(data['bathrooms'])
+        ]).reshape(1, -1)
+
+        # Perform prediction
+        prediction = model.predict(input_features)
+        return jsonify({'prediction': round(float(prediction[0]), 2)})
 
     except Exception as e:
-        # If something goes wrong, return the error message
+        print(f"Error during prediction: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
+    # Set debug=False for production
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
