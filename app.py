@@ -32,7 +32,7 @@ def predict():
         input_array = np.array(input_features).reshape(1, -1)
 
         # Perform the prediction
-        prediction = model.predict(input_array)[0]
+        prediction = model.predict(input_array)
         # Ensure the prediction is a float value, not a numpy type
         prediction = float(prediction)
         
